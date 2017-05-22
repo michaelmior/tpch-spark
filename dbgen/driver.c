@@ -113,6 +113,7 @@ void	gen_tbl (int tnum, DSS_HUGE start, DSS_HUGE count, long upd_num);
 int		pr_drange (int tbl, DSS_HUGE min, DSS_HUGE cnt, long num);
 int		set_files (int t, int pload);
 int		partial (int, int);
+int		bit_count (unsigned int);
 
 
 extern int optind, opterr;
@@ -126,7 +127,7 @@ char *spawn_args[25];
 #ifdef RNG_TEST
 extern seed_t Seed[];
 #endif
-static int bTableSet = 0;
+static unsigned int bTableSet = 0;
 
 
 /*
@@ -379,7 +380,7 @@ usage (void)
 {
 	fprintf (stderr, "%s\n%s\n\t%s\n%s %s\n\n",
 		"USAGE:",
-		"dbgen [-{vf}][-T {pcsoPSOL}]",
+		"dbgen [-{vf}][-T {pcsoPSOL}][-o]",
 		"[-s <scale>][-C <procs>][-S <step>]",
 		"dbgen [-v] [-O m] [-s <scale>]",
 		"[-U <updates>]");
@@ -407,6 +408,7 @@ usage (void)
 	fprintf (stderr, "-T r   -- generate region ONLY\n");
 	fprintf (stderr, "-T s   -- generate suppliers ONLY\n");
 	fprintf (stderr, "-T S   -- generate partsupp ONLY\n");
+	fprintf (stderr, "-o     -- write to stdout\n");
 	fprintf (stderr,
 		"\nTo generate the SF=1 (1GB), validation database population, use:\n");
 	fprintf (stderr, "\tdbgen -vf -s 1\n");
@@ -444,6 +446,19 @@ partial (int tbl, int s)
 	return (0);
 }
 
+/*
+* int bit_count(unsigned int n) -- count the number of set bits in the integer
+*/
+int
+bit_count (unsigned int n) {
+	int counter = 0;
+	while(n) {
+		counter += n % 2;
+		n >>= 1;
+	}
+	return counter;
+}
+
 void
 process_options (int count, char **vector)
 {
@@ -451,7 +466,7 @@ process_options (int count, char **vector)
 	FILE *pF;
 	
 	while ((option = getopt (count, vector,
-		"b:C:d:fi:hO:P:qs:S:T:U:v")) != -1)
+		"b:C:d:fi:hO:P:qs:S:T:oU:v")) != -1)
 	switch (option)
 	{
 		case 'b':				/* load distributions from named file */
@@ -576,6 +591,9 @@ process_options (int count, char **vector)
 				exit (1);
 			}
 			break;
+		case 'o':				/* write to stdout */
+			write_stdout = 1;
+			break;
 		case 'O':				/* optional actions */
 			switch (tolower (*optarg))
 			{
@@ -648,6 +666,18 @@ void validate_options(void)
 		exit(-1);
 	}
 
+	if ((bTableSet == 0) && write_stdout)
+	{
+		fprintf(stderr, "ERROR: -T must be specifed when writing to stdout\n");
+		exit(-1);
+	}
+
+	if (bit_count((unsigned int) table) > 1 && write_stdout)
+	{
+		fprintf(stderr, "ERROR: only one table can be specified when writing to stdout\n");
+		exit(-1);
+	}
+
 	return;
 }
 
@@ -674,6 +704,7 @@ main (int ac, char **av)
     delete_segments=0;
     insert_orders_segment=0;
     insert_lineitem_segment=0;
+	write_stdout = 0;
     delete_segment=0;
 	verbose = 0;
 	set_seeds = 0;

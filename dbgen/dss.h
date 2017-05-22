@@ -286,6 +286,7 @@ EXTERN int delete_segments;
 EXTERN int insert_orders_segment;
 EXTERN int insert_lineitem_segment;
 EXTERN int delete_segment;
+EXTERN long write_stdout;
 
 
 #ifndef DECLARER

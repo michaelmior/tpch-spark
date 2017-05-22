@@ -388,12 +388,15 @@ tbl_open(int tbl, char *mode)
     struct stat fstats;
     int      retcode;
 
-
-    if (*tdefs[tbl].name == PATH_SEP)
-        strcpy(fullpath, tdefs[tbl].name);
-    else
-        sprintf(fullpath, "%s%c%s",
-            env_config(PATH_TAG, PATH_DFLT), PATH_SEP, tdefs[tbl].name);
+    if (write_stdout) {
+        sprintf(fullpath, "/dev/stdout");
+    } else {
+        if (*tdefs[tbl].name == PATH_SEP)
+            strcpy(fullpath, tdefs[tbl].name);
+        else
+            sprintf(fullpath, "%s%c%s",
+                env_config(PATH_TAG, PATH_DFLT), PATH_SEP, tdefs[tbl].name);
+    }
 
     retcode = stat(fullpath, &fstats);
     if (retcode) {
