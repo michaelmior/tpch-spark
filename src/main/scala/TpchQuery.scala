@@ -45,8 +45,7 @@ object TpchQuery {
   def executeQueries(sc: SparkContext, schemaProvider: TpchSchemaProvider, queryNum: Int): ListBuffer[(String, Float)] = {
 
     // if set write results to hdfs, if null write to stdout
-    // val OUTPUT_DIR: String = "/tpch"
-    val OUTPUT_DIR: String = "file://" + new File(".").getAbsolutePath() + "/dbgen/output"
+    val OUTPUT_DIR: String = "/tpch"
 
     val results = new ListBuffer[(String, Float)]
 
@@ -84,10 +83,10 @@ object TpchQuery {
     val sc = new SparkContext(conf)
 
     // read files from local FS
-    val INPUT_DIR = "file://" + new File(".").getAbsolutePath() + "/dbgen"
+    // val INPUT_DIR = "file://" + new File(".").getAbsolutePath() + "/dbgen"
 
     // read from hdfs
-    // val INPUT_DIR: String = "/dbgen"
+    val INPUT_DIR: String = "/dbgen"
 
     val schemaProvider = new TpchSchemaProvider(sc, INPUT_DIR)
 
